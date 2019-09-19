@@ -98,7 +98,7 @@ def main(field statement, field[16] fstmsg, field[12] sndmsg, field[10] context)
   field[256] v1 = unpack256(sndmsg[8])
   field[256] w1 = unpack256(sndmsg[9])
   field[256] a1minusu0 = unpack256(sndmsg[10])
-  field[256] a2miunsu1 = unpack256(sndmsg[11])
+  field[256] a2minusu1 = unpack256(sndmsg[11])
 
   // d0 g0 = R0 + (a0 A0) + (a5 A5)
   field[2] lhs0 = multiply(d0, g0, context)
