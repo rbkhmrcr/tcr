@@ -5,7 +5,6 @@ babyjubjubr = 273603035897990940278080071815715938607681397215856725920021566094
 babyjubjubq = 21888242871839275222246405745257275088548364400416034343698204186575808495617
 
 Fq = GF(babyjubjubq)
-print(Fq.primitive_element())
 Fr = GF(babyjubjubr)
 
 a = Fq(168700)
@@ -122,40 +121,14 @@ def prove_prime(w, s):
 
   print(a[0])
 
-  print(R0[0])
-  print(R0[1])
+  fstmsg = [R0, R1, R2, R3, S0, S1, T0, T1]
+  for msg in fstmsg:
+    print(msg[0])
+    print(msg[1])
 
-  print(R1[0])
-  print(R1[1])
-
-  print(R2[0])
-  print(R2[1])
-
-  print(R3[0])
-  print(R3[1])
-
-  print(S0[0])
-  print(S0[1])
-
-  print(S1[0])
-  print(S1[1])
-
-  print(T0[0])
-  print(T0[1])
-
-  print(T1[0])
-  print(T1[1])
-
-  print(Fr(d0))
-  print(Fr(d1))
-  print(Fr(d2))
-  print(Fr(d3))
-  print(Fr(u0))
-  print(Fr(v0))
-  print(Fr(w0))
-  print(Fr(u1))
-  print(Fr(v1))
-  print(Fr(w1))
+  sndmsg = [d0, d1, d2, d3, u0, v0, w0, u1, v1, w1]
+  for msg in sndmsg:
+    print(Fr(msg))
 
   JUBJUBE = 21888242871839275222246405745257275088614511777268538073601725287587578984328
   JUBJUBC = 8
@@ -197,19 +170,19 @@ h1 = Ebjj(1223996047904339390926257219444627198120243268154227071419528587695306
 
 Scalars = GF(Ebjj.cardinality() / 8)
 
-x = Integer(1)
-x0 = Integer(1)
-x1 = Integer(1)
-x2 = Integer(1)
-x3 = Integer(1)
-x4 = Integer(1)
-x5 = Integer(1)
-x6 = Integer(1)
+x = random_value('hello tcr', 1)
+x0 = x
+x1 = x
+x2 = x 
+x3 = x 
+x4 = x 
+x5 = x 
+x6 = x 
 y = x*g
 
 b = Integer(1)
-b0 = Integer(1)
-b1 = Integer(1)
+b0 = b 
+b1 = b
 c0 = x*g0
 c1 = b*g1+x*h0
 c2 = b*g1+x*y
