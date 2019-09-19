@@ -126,7 +126,7 @@ def prove_prime(w, s):
     print(msg[0])
     print(msg[1])
 
-  sndmsg = [d0, d1, d2, d3, u0, v0, w0, u1, v1, w1]
+  sndmsg = [d0, d1, d2, d3, u0, v0, w0, u1, v1, w1, (a1 - u0), (a2 - u1)]
   for msg in sndmsg:
     print(Fr(msg))
 

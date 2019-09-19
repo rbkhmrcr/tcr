@@ -21,9 +21,9 @@ import "hashes/sha256/512bitPacked.code" as sha256packed
 
 // statement = H(y, A0, ..., A6)
 // firstmsg = R0, R1, R2, R3, S0, S1, T0, T1
-// secondmsg = d0, d1, d2, d3, u0, v0, w0, u1, v1, w1
+// secondmsg = d0, d1, d2, d3, u0, v0, w0, u1, v1, w1, (a1 - u0), (a2 - u1) 
 
-def main(field statement, field[16] fstmsg, field[10] sndmsg, field[10] context) -> (field):
+def main(field statement, field[16] fstmsg, field[12] sndmsg, field[10] context) -> (field):
 
   field[2] g = [13037949799327265748286426706936349024124924757595405599698606380497400784347, 393589182837104319763301766843923249088483507277002073284380207823253619313]
   field[2] g0 = [10480227264716662452755474067665177302533350463766626583754719465282143096156, 8369223176222797522123539354678750082493875221914526607111902450577289923070]
@@ -97,10 +97,8 @@ def main(field statement, field[16] fstmsg, field[10] sndmsg, field[10] context)
   field[256] u1 = unpack256(sndmsg[7])
   field[256] v1 = unpack256(sndmsg[8])
   field[256] w1 = unpack256(sndmsg[9])
-
-  // fixme
-  field[256] a1minusu0 = a1
-  field[256] a2minusu1 = a2
+  field[256] a1minusu0 = unpack256(sndmsg[10])
+  field[256] a2miunsu1 = unpack256(sndmsg[11])
 
   // d0 g0 = R0 + (a0 A0) + (a5 A5)
   field[2] lhs0 = multiply(d0, g0, context)
