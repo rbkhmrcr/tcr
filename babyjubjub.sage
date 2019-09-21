@@ -23,12 +23,65 @@ wa = (3-A^2)/(3*B^2)
 wb = (2*A^3-9*A)/(27*B^3)
 x0, y0 = (base_u+A/3)/B, base_v/B
 
+# twisted edwards curve arithmetic
+
+def ed_add(P, Q):
+  [x1, y1] = P
+  [x2, y2] = Q
+  x3 = (x1*y2+y1*x2)/(1+d*x1*x2*y1*y2)
+  y3 = (y1*y2-a*x1*x2)/(1-d*x1*x2*y1*y2)
+  return [x3, y3]
+
+def ed_double(P):
+  [x, y] = P
+  x3 = (x*y+y*x)/(1+d*x*x*y*y)
+  y3 = (y*y-a*x*x)/(1-d*x*x*y*y)
+  return [x3, y3]
+
+def ed_negate(P):
+  [x, y] = P
+  return [-x, y]
+
+# montgomery to weierstrass
+def m_to_w(P):
+  [x, y] = P
+  return [(x+A/3)/B, y/B]
+
+# weierstrass to montgomery
+def w_to_m(P):
+  [x, y] = P
+  return [B*x-(A/3), B*y]
+
+# twisted edwards to montgomery
+def e_to_m(P):
+  [x, y] = P
+  return [(1+y)/(1-y), (1+y)/(x-x*y)]
+
+# montgomery to twisted edwards
+def m_to_e(P):
+  [x, y] = P
+  return [x/y, (x-1)/(x+1)]
+
+# weierstrass to twisted edwards
+def w_to_e(P):
+  return m_to_e(w_to_m(P))
+
+# twisted edwards to weierstrass
+def e_to_w(P):
+  return m_to_w(e_to_m(P))
+
+assert m_to_w([base_u, base_v]) == [x0, y0]
+assert w_to_m([x0, y0]) == [base_u, base_v]
+assert e_to_m([base_x, base_y]) == [base_u, base_v]
+assert m_to_e([base_u, base_v]) == [base_x, base_y]
+assert w_to_e([x0, y0]) == [base_x, base_y]
+assert e_to_w([base_x, base_y]) == [x0, y0]
+
 Ebjj = EllipticCurve(Fq, [wa, wb])
 a = Ebjj.random_point()
 b = Ebjj.random_point()
 
-g = Ebjj.random_point()
-
+g = Ebjj(x0, y0)
 g0 = Ebjj(10480227264716662452755474067665177302533350463766626583754719465282143096156,
 8369223176222797522123539354678750082493875221914526607111902450577289923070)
 g1 = Ebjj(11880246950178646564845070742914370409150886704747897303831567178374129810211,
@@ -38,7 +91,12 @@ h0 = Ebjj(3168195724794061035067437460306519652998969886362841281644734115844445
 h1 = Ebjj(12239960479043393909262572194446271981202432681542270714195285876953060316412,
 16901143140203092244252603065645010058104514960352419130166756310402509981799)
 
+# hard_coded_points = [g, g0, g1, h0, h1]
+# for p in hard_coded_points:
+#   print(w_to_e([p[0], p[1]]))
+
 Scalars = GF(Ebjj.cardinality() / 8)
+assert Ebjj.cardinality() / 8 == babyjubjubr
 
 def random_value(prefix, i):
   return int(hashlib.sha256('%s%d' % (prefix, i)).hexdigest(), 16)
@@ -95,99 +153,57 @@ def prove_prime(w, s):
   d2 = r2 + a4*x4
   d3 = r3 + a6*x6
 
-  # check : d0 g0 = R0 + a0 A0 + a5 A5
   assert d0*g0 == R0 + a0*A0 + a5*A5
-
-  # check : u0 g1 + v0 h0 = S0 + a1 A1
   assert u0*g1 + v0*h0 == S0 + a1*A1
-
-  # check : w0 h0 = T0 + (a1 - u0) A1
   assert w0*h0 == T0 + (a1 - u0)*A1
-
-  # check : u1 g1 + v1 y = S1 + a2 A2
   assert u1*g1 + v1*y == S1 + a2*A2
-
-  # check : w1 y = T1 + (a2 - u1) A2
   # assert w1*y == T1 + (a2 - u1)*A2
-
-  # check : d1 ( g0 - h0 + y) = R1 + a3 A3
   assert d1*(g0 - h0 + y) == R1 + a3*A3
-
-  # check : d2 h1 = R2 + a4 A4
   assert d2*h1 == R2 + a4*A4
-
-  # check : d3 (g0 + h1) = R3 + a6 A6
   assert d3*(g0 + h1) == R3 + a6*A6
 
+  print "a"
   print(a[0])
 
   fstmsg = [R0, R1, R2, R3, S0, S1, T0, T1]
   for msg in fstmsg:
-    print(msg[0])
-    print(msg[1])
+    emsg = w_to_e([msg[0], msg[1]])
+    print(emsg[0])
+    print(emsg[1])
 
   sndmsg = [d0, d1, d2, d3, u0, v0, w0, u1, v1, w1, (a1 - u0), (a2 - u1)]
   for msg in sndmsg:
     print(Fr(msg))
 
-  JUBJUBE = 21888242871839275222246405745257275088614511777268538073601725287587578984328
-  JUBJUBC = 8
-  JUBJUBA = 168700
-  JUBJUBD = 168696
-  MONTA = 168698
-  MONTB = 1
-  infinity = [0, 1]
-  Gu = 16540640123574156134436876038791482806971768689494387082833631921987005038935
-  Gv = 20819045374670962167435360035096875258406992893633759881276124905556507972311
- 
-  #         0       1         2            3         4   5      6       7        8      9
-  # return [JUBJUBA, JUBJUBD, infinity[0], infinity[1], Gu, Gv, JUBJUBE, JUBJUBC, MONTA, MONTB]
-  
-  print(JUBJUBA)
-  print(JUBJUBD)
-  print(infinity[0])
-  print(infinity[1])
-  print(Gu)
-  print(Gv)
-  print(JUBJUBE)
-  print(JUBJUBC)
-  print(MONTA)
-  print(MONTB)
-
 Ebjj = EllipticCurve(Fq, [wa, wb])
 a = Ebjj.random_point()
 b = Ebjj.random_point()
-
-g = Ebjj(13037949799327265748286426706936349024124924757595405599698606380497400784347, 393589182837104319763301766843923249088483507277002073284380207823253619313)
-g0 = Ebjj(10480227264716662452755474067665177302533350463766626583754719465282143096156,
-8369223176222797522123539354678750082493875221914526607111902450577289923070)
-g1 = Ebjj(11880246950178646564845070742914370409150886704747897303831567178374129810211,
-11568178448482280388943253237660832271540088086331062617007232034122551287432)
-h0 = Ebjj(3168195724794061035067437460306519652998969886362841281644734115844445886185,
-8489771060550565563483479806652696626788502212157814537990951108069267515955)
-h1 = Ebjj(12239960479043393909262572194446271981202432681542270714195285876953060316412,
-16901143140203092244252603065645010058104514960352419130166756310402509981799)
-
 Scalars = GF(Ebjj.cardinality() / 8)
-
 x = random_value('hello tcr', 1)
 x0 = x
 x1 = x
-x2 = x 
-x3 = x 
-x4 = x 
-x5 = x 
-x6 = x 
-y = x*g
+x2 = x
+x3 = x
+x4 = x
+x5 = x
+x6 = x
+xx = random_value('hello y', 1)
+y = xx*g
+# print "y"
+# print(w_to_e([y[0], y[1]]))
 
 b = Integer(1)
-b0 = b 
+b0 = b
 b1 = b
 c0 = x*g0
 c1 = b*g1+x*h0
 c2 = b*g1+x*y
 c3 = x*g0
 c4 = x*(y-h0)+x*h1
+
+# commitments = [c0, c1, c2, c3, c4]
+# for c in commitments:
+#   print(w_to_e([c[0], c[1]]))
 
 """
 # A0 = x0 g0 = c0
