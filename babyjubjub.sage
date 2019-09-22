@@ -132,7 +132,7 @@ def prove_prime(w, s):
   S0 = s0*g1 + s1*h0
   T0 = (s0*b0)*g1 + s2*h0
   S1 = s3*g1 + s4*y
-  T1 = s4*g1 + s5*y
+  T1 = (s3*b1)*g1 + s5*y
 
   a0 = random_value('1', 1)
   a1 = random_value('1', 1)
@@ -157,7 +157,7 @@ def prove_prime(w, s):
   assert u0*g1 + v0*h0 == S0 + a1*A1
   assert w0*h0 == T0 + (a1 - u0)*A1
   assert u1*g1 + v1*y == S1 + a2*A2
-  # assert w1*y == T1 + (a2 - u1)*A2
+  assert w1*y == T1 + (a2 - u1)*A2
   assert d1*(g0 - h0 + y) == R1 + a3*A3
   assert d2*h1 == R2 + a4*A4
   assert d3*(g0 + h1) == R3 + a6*A6
