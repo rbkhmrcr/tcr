@@ -28,8 +28,8 @@ library babyjubjub {
             return p;
         }
 
-        // x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)
         uint dprod = mulmod(D, mulmod(mulmod(p.x, q.x, modulus), mulmod(p.y, q.y, modulus), modulus), modulus);
+        // x3 = (x1y2 + y1x2) / (1 + dx1x2y1y2)
         uint x3num = addmod(mulmod(p.x, q.y, modulus), mulmod(p.y, q.x, modulus), modulus);
         r.x = mulmod(x3num, invmod(addmod(1, dprod, modulus)), modulus);
         
@@ -92,7 +92,9 @@ library babyjubjub {
             mstore(add(p, 0x80), e)     // Exponent
             mstore(add(p, 0xa0), m)     // Modulus
             // call modexp precompile! -- old school gas handling
-            if iszero(staticcall(gas, 0x05, p, 0xc0, p, 0x20) {
+            let success := staticcall(gas, 0x05, p, 0xc0, p, 0x20)
+            // gas fiddling
+            switch success case 0 {
                 revert(0, 0)
             }
             // data

@@ -226,4 +226,97 @@ w = [x, x, x, x, x, x, x, b, b]
 
 prove_prime(w, s)
 
-# print(hashlib.sha256(c0 + c1 + c2 + c3))
+
+# prove knowledge of r such that c = wgt * g1 + r*h0, for known wgt,
+# shared input is r * h0 = −wgt * g1 + c.
+
+def pok(y, g, x):
+  r = Integer(Scalars.random_element())
+  R = r*g
+  a = random_value(R, 1)
+  d = r + a*x
+  return (R, d)
+
+def pok_verify(y, g, pi):
+  (r, d) = pi
+  a = random_value(r, 1)
+  return (r + (a * y) == d*g)
+
+# user logic
+# Yj = wgt[i] * c0[i] - wgt[k] * c0[k]
+def gety(j):
+  for i < j:
+    for k > j:
+      y = wgt[i] * c0[i] - wgt[k] * c0[k]
+  return y
+
+# prove knowledge of r such that c = wgt * g1 + r*h0, for known wgt,
+# shared input is r * h0 = −wgt * g1 + c.
+def deposit(amt):
+  r = Integer(Scalars.random_element())
+  c = amt*g1 + r*h0
+  pi = pok(r*h0, h0, r)
+  return amt, c, pi, pk
+
+def update():
+  pi = pok(c, amt, r)
+  return pi, pk
+
+# c0 = x*g0
+def vote1(vote, wgt):
+  x = Integer(Scalars.random_element())
+  c0 = x*g0
+  c1 = vote*g1 + x*h0
+  pi = pok(c0, g0, x)
+  return c0, c1, pi, wgt, pk
+
+def vote2():
+  s = Integer(Scalars.random_element())
+  y = makey()
+  c2 = vote*g1 + x*y
+  c3 = s*g0
+  c4 = x*(y-h0) + x*h1
+  pi = prove_v2(y, c1, c2, c3, c4, x, s)
+  return c2, c3, c4, pi, pk
+
+# contract logic
+
+# Yj = wgt[i] * c0[i] - wgt[k] * c0[k]
+def gety(j):
+  for i < j:
+    for k > j:
+      y = wgt[i] * c0[i] - wgt[k] * c0[k]
+  return y
+
+def process_deposit(txdep):
+  (amt, c, pi, pk) = txdep
+  b = verify_pok(c, pk, pi)
+  if b:
+    self.curators[pk] = (c, amt)
+  return
+
+def process_update(txup):
+  (amt, pi, pk) = txup
+  (c, wgt) = self.curators[pk]
+  b = verify_pok(c, pk, pi)
+  if b:
+    wgt = amt
+  return
+
+def process_vote1(txvote1):
+  (c0, c1, pi, wgt) = txvote1
+  b1 = verify_pok(c0, g0, pi)
+  b = not wgt < curators[pk][wgt]
+  if b and b1:
+    voters[pk][data] = (c0, c1, wgt)
+  return
+
+
+def process_vote2(txvote2):
+  (c2, c3, c4, pi, pk) = txvote2
+  y = contract_get_y(pk)
+  (c0, c1, wgt) = voters[pk][data]
+  b2 = verify_v2(y, c0, c1, c2, c3, c4, pi)
+  if b2:
+    self.tallyg = self.tallyg + wgt*c2
+  return
