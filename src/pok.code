@@ -17,7 +17,7 @@ import "hashes/sha256/512bitPacked.code" as sha256packed
 // firstmsg = R0, R1, R2, R3, S0, S1, T0, T1
 // secondmsg = d0, d1, d2, d3, u0, v0, w0, u1, v1, w1, (a1 - u0), (a2 - u1)
 
-def main(field statement, field[16] fstmsg, field[12] sndmsg) -> (field):
+def main(field statement, private field[16] fstmsg, private field[12] sndmsg) -> (field):
 
   context = context()
 
