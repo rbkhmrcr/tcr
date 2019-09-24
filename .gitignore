@@ -2,3 +2,4 @@ ZoKrates
 *.py
 .DS_Store
 *~
+test*
