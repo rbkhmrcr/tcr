@@ -17,7 +17,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 Then checkout this repository & run the benchmarks with
 
 ```
-git clone git@github.com:rbkhmrcr/tcr.git cd tcr cd src cargo bench
+git clone git@github.com:rbkhmrcr/tcr.git 
+cd tcr 
+cd src 
+cargo bench
 ```
 
 
@@ -27,7 +30,7 @@ There are a lot of dependencies if you want to run the Solidity
 code & its tests on your machine, so the easiest way to interact with the
 contract is with browser Solidity!
 
-Navigate to browser Solidity [her](ehttps://remix.ethereum.org/). Then click on
+Navigate to browser Solidity [here](https://remix.ethereum.org/). Then click on
 the 'GitHub' button under 'Import From', and paste the following url :
 ```
 https://github.com/rbkhmrcr/tcr/blob/master/contracts/verif.sol
