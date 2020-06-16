@@ -10,7 +10,7 @@ contract TCR {
     return Point(1, 2);
   }
 
-  function negate(Point memory p) internal returns (Point memory) {
+  function negate(Point memory p) public view returns (Point memory) {
     uint q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
     if (p.x == 0 && p.y == 0)
       return Point(0, 0);
@@ -94,8 +94,34 @@ function mul(Point memory a, uint k) public view returns (Point memory p) {
       Point R;
       uint d;
   }
+  
+  uint[] amts;
+    
+  function deposit(uint amt, pok memory p, Point memory g, Point memory y) public returns (Point memory) {
+        uint256 c = uint256(sha256(abi.encode(p.R.x)));
+        Point memory ycr = add(mul(y, c), p.R);
+        Point memory rhs = negate(mul(g, p.d));
+        amts.push(amt);
+        return add(ycr, rhs);
+  }
+  
+   
+  function update(uint amt, uint i, pok memory p, Point memory g, Point memory y) public returns (Point memory) {
+        uint256 c = uint256(sha256(abi.encode(p.R.x)));
+        Point memory ycr = add(mul(y, c), p.R);
+        Point memory rhs = negate(mul(g, p.d));
+        amts[i] = amt;
+        return add(ycr, rhs);
+  }
+  
+  function verify_vote1(pok memory p, Point memory g, Point memory y) public returns (Point memory) {
+        uint256 c = uint256(sha256(abi.encode(p.R.x)));
+        Point memory ycr = add(mul(y, c), p.R);
+        Point memory rhs = negate(mul(g, p.d));
+        return add(ycr, rhs);
+  }
 
-  function verify(proof memory p, computed memory com) public returns (uint) {
+  function verify_vote2(proof memory p, computed memory com) public returns (uint) {
     Point memory g = Point(1, 2);
     Point memory g0 = Point(1368015179489954701390400359078579693043519447331113978918064868415326638035,9918110051302171585080402603319702774565515993150576347155970296011118125764);
     Point memory g1 = Point(3010198690406615200373504922352659861758983907867017329644089018310584441462,4027184618003122424972590350825261965929648733675738730716654005365300998076);
@@ -132,7 +158,7 @@ function mul(Point memory a, uint k) public view returns (Point memory p) {
     if (add(mul(s.g1, p.u), mul(s.y, p.v)).x == add(p.S1, mul(com.A2, p.a2)).x) {
       success++;
     }
-    // h0 * w == T + A1 * (a2 - u)
+    // h0 * w == T + A1 * (a2 - u) (do we have a scalar minus function? :/)
     if (mul(s.h0, p.w).x == add(p.T, mul(com.A1, (p.a2 - p.u))).x) {
       success++;
     }
