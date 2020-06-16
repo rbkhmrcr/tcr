@@ -89,43 +89,51 @@ function mul(Point memory a, uint k) public view returns (Point memory p) {
     uint a1;
     uint a2;
   }
+  
+  struct pok {
+      Point R;
+      uint d;
+  }
 
-  function verify(proof memory p) public returns (uint) {
+  function verify(proof memory p, computed memory com) public returns (uint) {
     Point memory g = Point(1, 2);
-    statement memory s = statement(g, g, g, g, g);
-    computed memory a = computed(g, g, g, g, g, g);
+    Point memory g0 = Point(1368015179489954701390400359078579693043519447331113978918064868415326638035,9918110051302171585080402603319702774565515993150576347155970296011118125764);
+    Point memory g1 = Point(3010198690406615200373504922352659861758983907867017329644089018310584441462,4027184618003122424972590350825261965929648733675738730716654005365300998076);
+    Point memory h0 = Point(3932705576657793550893430333273221375907985235130430286685735064194643946083,18813763293032256545937756946359266117037834559191913266454084342712532869153);
+    Point memory h1 = Point(10835225521862395592687560951453385602895512958032257955899877380493200080708,2623520004791921319615054428233368525468155544765295675952919303096698181037);
+    statement memory s = statement(g, g0, g1, h0, h1);
     // compute a0, a1, a2
     uint success;
     // g0 * d0 == R0 + A0 * a0
-    if (mul(s.g0, p.d0).x == add(p.R0, (mul(a.A0, p.a0))).x) {
+    if (mul(s.g0, p.d0).x == add(p.R0, (mul(com.A0, p.a0))).x) {
       success++;
     }
     // (h0 - y) * d0 == R1 + A3 * a0
-    if (mul(add(s.h0, Point(s.y.x, -s.y.y)), p.d0).x == add(p.R1, (mul(a.A3, p.a0))).x) {
+    if (mul(add(s.h0, Point(s.y.x, -s.y.y)), p.d0).x == add(p.R1, (mul(com.A3, p.a0))).x) {
       success++;
     }
     // h1 * d1 == R2 + A4 * a1
-    if (mul(s.h1, p.d1).x == add(p.R2, mul(a.A4, p.a1)).x) {
+    if (mul(s.h1, p.d1).x == add(p.R2, mul(com.A4, p.a1)).x) {
       success++;
     }
     // h1 * d1 == R2 + A4 * a1
-    if (mul(s.h1, p.d1).x == add(p.R2, mul(a.A4, p.a1)).x) {
+    if (mul(s.h1, p.d1).x == add(p.R2, mul(com.A4, p.a1)).x) {
       success++;
     }
     // g0 * d1 == R3 + A5 * a1
-    if (mul(s.g0, p.d1).x == add(p.R3, mul(a.A5, p.a1)).x) {
+    if (mul(s.g0, p.d1).x == add(p.R3, mul(com.A5, p.a1)).x) {
       success++;
     }
     // g1 * u + h0 * v == S0 + A1 * a2
-    if (add(mul(s.g1, p.u), mul(s.h0, p.v)).x == add(p.S0, mul(a.A1, p.a2)).x) {
+    if (add(mul(s.g1, p.u), mul(s.h0, p.v)).x == add(p.S0, mul(com.A1, p.a2)).x) {
       success++;
     }
     // g1 * u + y * v == S1 + A2 * a2
-    if (add(mul(s.g1, p.u), mul(s.y, p.v)).x == add(p.S1, mul(a.A2, p.a2)).x) {
+    if (add(mul(s.g1, p.u), mul(s.y, p.v)).x == add(p.S1, mul(com.A2, p.a2)).x) {
       success++;
     }
-    // h0 * w == T + A1 * (a2 - u) (do we have a scalar minus function? :/)
-    if (mul(s.h0, p.w).x == add(p.T, mul(a.A1, (p.a2 - p.u))).x) {
+    // h0 * w == T + A1 * (a2 - u)
+    if (mul(s.h0, p.w).x == add(p.T, mul(com.A1, (p.a2 - p.u))).x) {
       success++;
     }
     return success;
