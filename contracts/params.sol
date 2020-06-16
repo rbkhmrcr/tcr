@@ -9,9 +9,3 @@
 
 // [[1,2],[1,2],[1,2],[1,2],[1,2],[1,2],[1,2],1,2,1,2,1,2,1,2]
 
-// deploying the contract : 568,496 gas
-// one verif : 22098 gas
-// two verif : 37443 gas
-// n - 1 verif : 115345 gas
-// n verif : 130696 gas
-// with transaction cost : 156192 gas
