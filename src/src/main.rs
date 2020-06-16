@@ -1,28 +1,30 @@
+#![allow(unused_variables)]
+#![allow(dead_code)]
+#![allow(non_snake_case)]
 #![feature(test)]
 extern crate bn;
 extern crate rand;
+extern crate test;
 
 use bn::*;
+use rand::thread_rng;
 
-#[allow(non_snake_case)]
 pub struct Witness {
     x0: Fr,
     x1: Fr,
     x2: Fr,
-    b: Fr // though has to be restricted to 0 / 1
+    b: Fr, // though has to be restricted to 0 / 1
 }
 
-#[allow(non_snake_case)]
-fn genwitness() -> Witness {
-    let rng = &mut rand::thread_rng();
+pub fn genwitness() -> Witness {
+    let rng = &mut thread_rng();
     let x0 = Fr::random(rng);
     let x1 = Fr::random(rng);
     let x2 = Fr::random(rng);
     let b = Fr::random(rng);
-    Witness{x0, x1, x2, b}
+    Witness { x0, x1, x2, b }
 }
 
-#[allow(non_snake_case)]
 pub struct Statement {
     g0: G1,
     g1: G1,
@@ -31,18 +33,16 @@ pub struct Statement {
     y: G1,
 }
 
-#[allow(non_snake_case)]
-fn genstatement() -> Statement {
-    let rng = &mut rand::thread_rng();
+pub fn genstatement() -> Statement {
+    let rng = &mut thread_rng();
     let g0 = G1::random(rng);
     let g1 = G1::random(rng);
     let h0 = G1::random(rng);
     let h1 = G1::random(rng);
     let y = G1::random(rng);
-    Statement{g0, g1, h0, h1, y}
+    Statement { g0, g1, h0, h1, y }
 }
 
-#[allow(non_snake_case)]
 pub struct Proof {
     R0: G1,
     R1: G1,
@@ -58,16 +58,14 @@ pub struct Proof {
     w: Fr,
 }
 
-#[allow(non_snake_case)]
 pub struct Commitments {
     c0: G1,
     c1: G1,
     c2: G1,
     c3: G1,
-    c4: G1
+    c4: G1,
 }
 
-#[allow(non_snake_case)]
 pub struct Computed {
     A0: G1,
     A1: G1,
@@ -77,8 +75,7 @@ pub struct Computed {
     A5: G1,
 }
 
-#[allow(non_snake_case)]
-fn make_commitments(c: Commitments) {
+pub fn make_commitments(c: Commitments) {
     let A0 = c.c0;
     let A1 = c.c1;
     let A2 = c.c2;
@@ -87,41 +84,44 @@ fn make_commitments(c: Commitments) {
     let A5 = c.c3;
 }
 
-
-#[allow(non_snake_case)]
-fn deposit(amt: Fr, ps: &Statement) -> G1 {
-    let rng = &mut rand::thread_rng();
+pub fn deposit(rng: &mut rand::ThreadRng, amt: Fr, ps: &Statement) -> (G1, G1, Fr) {
     let r = Fr::random(rng);
     let C = ps.g1 * amt + ps.h0 * r;
-    let proof = Fr::random(rng);
-    C
+    // A = h0^a, c, z = c amt + a.
+    let a = Fr::random(rng);
+    let A = ps.h0 * a;
+    let c = Fr::random(rng);
+    let z = c * amt + r;
+    (C, A, z)
 }
 
-#[allow(non_snake_case)]
-fn vote1(vote: Fr, wgt: Fr, ps: &Statement) -> (G1, G1) {
-    let rng = &mut rand::thread_rng();
+pub fn vote1(vote: Fr, wgt: Fr, ps: &Statement) -> (G1, G1, G1, Fr) {
+    let rng = &mut thread_rng();
     let x = Fr::random(rng);
     let c0 = ps.g0 * x;
     let c1 = ps.g1 * vote + ps.h0 * x;
-    let proof = Fr::random(rng);
-    (c0, c1)
+    // A = g^a, c, z = cx + a
+    let a = Fr::random(rng);
+    let A = ps.g0 * a;
+    let c = Fr::random(rng);
+    let z = c * x + a;
+    (c0, c1, A, z)
 }
 
-#[allow(non_snake_case)]
-fn vote2(vote: Fr, x: Fr, ps: &Statement) -> (G1, G1, G1) {
-    let rng = &mut rand::thread_rng();
+pub fn vote2(vote: Fr, x: Fr, ps: &Statement) -> (G1, G1, G1) {
+    let rng = &mut thread_rng();
+    let witness = genwitness();
     let s = Fr::random(rng);
     let Y = G1::random(rng);
     let c2 = ps.g1 * vote + Y * x;
     let c3 = ps.g0 * s;
-    let c4 = (- ps.h0 + Y) * x + ps.h1 * s;
-    let proof = Fr::random(rng);
+    let c4 = (-ps.h0 + Y) * x + ps.h1 * s;
+    let proof = genproof(&witness, ps);
     (c2, c3, c4)
 }
 
-#[allow(non_snake_case)]
-fn genproof(pw: Witness, ps: Statement) -> Proof {
-    let rng = &mut rand::thread_rng();
+pub fn genproof(pw: &Witness, ps: &Statement) -> Proof {
+    let rng = &mut thread_rng();
     let r0 = Fr::random(rng);
     let r1 = Fr::random(rng);
     let s0 = Fr::random(rng);
@@ -143,7 +143,7 @@ fn genproof(pw: Witness, ps: Statement) -> Proof {
     let d1 = r1 + a1 * pw.x2;
     let u = s0 + a2 * pw.b;
     let v = s1 + a2 * pw.x1;
-    let w = s2 + pw.x1 * ( a2 - u );
+    let w = s2 + pw.x1 * (a2 - u);
 
     Proof {
         R0,
@@ -157,41 +157,43 @@ fn genproof(pw: Witness, ps: Statement) -> Proof {
         d1,
         u,
         v,
-        w
+        w,
     }
 }
-
-
-fn main () {
-        let pw = genwitness();
-        let ps = genstatement();
-        let _pp = genproof(pw, ps);
-}
-
-extern crate test;
-
-pub fn add_two(a: i32) -> i32 {
-    a + 2
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use test::Bencher;
 
-    #[test]
-    fn it_works() {
-        assert_eq!(4, add_two(2));
+    #[bench]
+    fn bench_deposit(b: &mut Bencher) {
+        let rng = &mut thread_rng();
+        let dep = Fr::random(rng);
+        let ps = genstatement();
+        b.iter(|| deposit(rng, dep, &ps));
     }
 
     #[bench]
-    fn bench_gen_proof(b: &mut Bencher) {
+    fn bench_update(b: &mut Bencher) {
+        let rng = &mut thread_rng();
+        let update = Fr::random(rng);
+        let ps = genstatement();
+        b.iter(|| deposit(rng, update, &ps));
+    }
+
+    #[bench]
+    fn bench_vote1(b: &mut Bencher) {
+        let ps = genstatement();
+        let vote = Fr::one();
+        let rng = &mut thread_rng();
+        let weight = Fr::random(rng);
+        b.iter(|| vote1(vote, weight, &ps));
+    }
+
+    #[bench]
+    fn bench_vote2(b: &mut Bencher) {
         let pw = genwitness();
         let ps = genstatement();
-        b.iter(|| genproof(pw, ps));
-    }
-    #[bench]
-    fn bench_add_two(b: &mut Bencher) {
-        b.iter(|| add_two(2));
+        b.iter(|| genproof(&pw, &ps));
     }
 }
