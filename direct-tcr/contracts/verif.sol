@@ -100,12 +100,10 @@ function mul(Point memory a, uint k) public view returns (Point memory p) {
     if (mul(s.g0, p.d0).x == add(p.R0, (mul(a.A0, p.a0))).x) {
       success++;
     }
-    /*
     // (h0 - y) * d0 == R1 + A3 * a0
     if (mul(add(s.h0, Point(s.y.x, -s.y.y)), p.d0).x == add(p.R1, (mul(a.A3, p.a0))).x) {
       success++;
     }
-    */
     // h1 * d1 == R2 + A4 * a1
     if (mul(s.h1, p.d1).x == add(p.R2, mul(a.A4, p.a1)).x) {
       success++;
